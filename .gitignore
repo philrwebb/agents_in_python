@@ -15,5 +15,5 @@ wheels/
 .env.*
 !.envcopy
 workspace/
-.vscode
+.vscode/
 .mypy_cache
