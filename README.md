@@ -1,24 +1,14 @@
 # Python Development Project
 
-A collection of Python development resources and educational materials.
-
----
-
-## 📚 Python Files
-
-> **Note:** No `.py` source files currently exist in this workspace. The Python content consists of:
-> - `python_doc.md` - Complete Python language documentation (11 sections, January 2025)
-> - `python.md` - Python OOP concepts and patterns (last updated 2024)
-> - `v0.py` through `v4.py` - Personal assistant agent versions with increasing capabilities
-> - `harness.py` - Complete production-ready agent infrastructure
-
 ---
 
 ## 🔄 Assistant Agent Evolution (v0-v4)
 
 ### **v0.py** - Basic Chat Assistant
+
 **What:** Simple chat interface with OpenAI integration
 **Key Features:**
+
 - Uses `Qwen3.5-4B-4bit` model (local, not API)
 - Reads from `http://127.0.0.1:8000/v1`
 - Basic single-shot chat with user messages
@@ -30,8 +20,10 @@ A collection of Python development resources and educational materials.
 ---
 
 ### **v1.py** - Tool-Enhanced Assistant
+
 **What:** Chat assistant with workspace tools
 **Key Features:**
+
 - Adds **3 tools**: `list_files()`, `read_file(filename)`, `write_file(filename, content)`
 - Tool schemas defined for OpenAI function calling
 - Single-shot tool execution model
@@ -39,6 +31,7 @@ A collection of Python development resources and educational materials.
 - Tracks tool calls with JSON parsing
 
 **Improvement over v0:**
+
 - Extends basic chat with file system operations
 - Model can "talk to tools" through JSON schema
 - Single-shot tool execution pattern
@@ -46,8 +39,10 @@ A collection of Python development resources and educational materials.
 ---
 
 ### **v2.py** - Iterative Tool Agent
+
 **What:** Enhanced tool orchestration with write capability
 **Key Features:**
+
 - Adds `write_file` tool (previously only read)
 - **Multi-shot loop:** Instead of single-shot, implements iterative agent loop
   - Model responds with tool call → execute tool → continue loop
@@ -56,6 +51,7 @@ A collection of Python development resources and educational materials.
 - Same OpenAI `OpenAI` client (synchronous)
 
 **Improvement over v1:**
+
 - Adds file write capability (full read-write access)
 - Introduces **iterative loop pattern** - tool calls can be chained
 - Model can make multiple tool calls in sequence
@@ -63,8 +59,10 @@ A collection of Python development resources and educational materials.
 ---
 
 ### **v3.py** - Async MCP Integration
+
 **What:** Asynchronous MCP-based agent with remote servers
 **Key Features:**
+
 - **Async/Await:** All `run_agent()` and `call_tool()` are now `async`
 - Adds **MCP (Model Context Protocol)** integration
 - `MCP_SERVERS` dictionary with `time` and `fetch` servers
@@ -75,6 +73,7 @@ A collection of Python development resources and educational materials.
 - CLI loop uses `asyncio.to_thread()` for synchronous `input()`
 
 **Improvements over v2:**
+
 - Adds **external MCP servers** (time, fetch)
 - Tools can now come from MCP servers, not just local
 - **Asynchronous execution** - faster startup, more efficient
@@ -83,8 +82,10 @@ A collection of Python development resources and educational materials.
 ---
 
 ### **v4.py** - Full-Fledged Harness with Memory
+
 **What:** Complete agent infrastructure with model registry, memory, and MCP config
 **Key Features:**
+
 - **Model Registry:** `ModelConfig` class with config for multiple models
 - `memory.md` file for user memory storage (persistent)
 - `mcp_servers.json` config file for MCP servers
@@ -95,12 +96,14 @@ A collection of Python development resources and educational materials.
 - CLI handles commands in addition to normal chat
 
 **Comprehensive Features:**
+
 - **Pillar 1 (MCP):** Manages MCP server connections dynamically
 - **Pillar 2 (Memory):** Loads memory before each session
 - **Pillar 3 (Model Registry):** Supports multiple models (including cloud endpoints)
 - **Systems:** Memory file, MCP config, unified tool dispatch
 
 **Major Improvements over v3:**
+
 - Full model registry (not just single model)
 - Config file-based MCP server management
 - Conversation history persists across model switches
@@ -112,16 +115,19 @@ A collection of Python development resources and educational materials.
 ## 📁 Project Structure
 
 ### Core Python Files
+
 - `python_doc.md` - Complete Python language reference
 - `python.md` - Python OOP concepts and patterns
 
 ### Web Content
+
 - `index.html` - Main HTML page
 - `style.css` - CSS styles
 - `code.js` - JavaScript code
 - `techwithtim.md` - Tech/programming content
 
 ### Personal Documents
+
 - `sonnet.txt` - Personal notes (sonnet)
 - `copysonnet.txt` - Copy of sonnet
 - `PLC.md` - PLC-related documentation
@@ -134,19 +140,24 @@ A collection of Python development resources and educational materials.
 ## 🎯 Design Patterns Used
 
 ### 1. **Tool Registration Pattern**
+
 ```python
 TOOLS: dict[str, Callable] = {"tool_name": tool_func}
 TOOL_SCHEMAS: list[ToolSchema] = [...]
 ```
+
 Tools are registered and their schemas are automatically built for LLM function calling.
 
 ### 2. **Iterative Agent Loop**
+
 Instead of single-shot response, implement loop that:
+
 1. Get response from model
 2. If tool call → execute tool, continue loop
 3. When no tool call → return response
 
 ### 3. **Async Tool Routing**
+
 ```python
 async def call_tool(name, args):
     if name in LOCAL_TOOLS:
@@ -154,14 +165,17 @@ async def call_tool(name, args):
     result = await mcp_sessions[name].call_tool(name, args)
     return result
 ```
+
 Single function routes to local or MCP servers.
 
 ### 4. **Memory Layer**
+
 ```python
 def load_memory() -> str
 def save_memory(fact: str) -> str
 # Memory file served as system prompt
 ```
+
 User memory is loaded into conversation and can be persisted.
 
 ---
@@ -199,12 +213,14 @@ LOCAL_API_KEY=your_key
 ## 📝 Usage Examples
 
 ### Basic Chat (v0)
+
 ```python
 python v0.py
 # Interact in CLI, conversation flows naturally
 ```
 
 ### Tool Usage (v1-v2)
+
 ```python
 python v2.py
 # Model can call:
@@ -214,6 +230,7 @@ python v2.py
 ```
 
 ### MCP Integration (v3-v4)
+
 ```python
 python v3.py
 # Model can also call:
@@ -222,6 +239,7 @@ python v3.py
 ```
 
 ### Full Harness (v4)
+
 ```python
 python v4.py
 # Interactive CLI with slash commands:
@@ -237,10 +255,13 @@ python v4.py
 ## 🌟 harness.py - Complete Production Harness
 
 ### **Overview**
+
 `harness.py` is the most complete and production-ready implementation, integrating and extending all the concepts from v0-v4 into a unified, configurable system. It's essentially a supercharged v4 with enhanced architecture and proper separation of concerns.
 
 ### **Purpose**
+
 `harness.py` serves as a complete infrastructure layer for deploying and managing a multi-model, tool-enabled, memory-aware AI assistant. It provides:
+
 - Centralized configuration management
 - Multiple model support with dynamic switching
 - Persistent memory storage
@@ -250,6 +271,7 @@ python v4.py
 ### **Key Components**
 
 #### **1. Model Registry (Pillar 1)**
+
 ```python
 class ModelConfig(BaseModel):
     base_url: str
@@ -264,11 +286,13 @@ MODELS: dict[str, ModelConfig] = {
     ),
 }
 ```
+
 - Centralizes all model configurations
 - Supports cloud endpoints and local servers
 - Dynamic model switching via slash commands
 
 #### **2. Memory System (Pillar 2)**
+
 ```python
 def load_memory() -> str
 def save_memory(fact: str) -> str
@@ -281,11 +305,13 @@ Here is what you remember about the user from previous sessions:
 {load_memory()}
 """
 ```
+
 - Persists user information to `memory.md`
 - Loads memory into conversation context
 - Tools to add, read, and view memory
 
 #### **3. MCP Server Management**
+
 ```python
 async def connect_mcp(stack: AsyncExitStack):
     config = json.loads(MCP_CONFIG.read_text(encoding="utf-8"))
@@ -293,12 +319,14 @@ async def connect_mcp(stack: AsyncExitStack):
         params = StdioServerParameters(command=spec["command"], args=spec["args"])
         # Start each MCP server
 ```
+
 - Reads from `mcp_servers.json` configuration file
 - Dynamically starts and manages MCP server connections
 - Supports multiple MCP servers simultaneously
 - Handles connection failures gracefully
 
 #### **4. Unified Tool Dispatch**
+
 ```python
 async def call_tool(name: str, args: dict) -> str:
     if name in LOCAL_TOOLS:
@@ -308,11 +336,13 @@ async def call_tool(name: str, args: dict) -> str:
         return result
     return f"error: unknown tool {name}"
 ```
+
 - Routes tool execution based on tool origin
 - Single entry point for all tools
 - Type-Checking with Pydantic validation
 
 #### **5. Slash Command Handler**
+
 ```python
 def handle_command(line: str) -> bool:
     """Returns True if the line was a command."""
@@ -335,6 +365,7 @@ def handle_command(line: str) -> bool:
             print(f"  [{schema.get('origin', 'local')}] {schema['name']}")
     # ... more commands
 ```
+
 - Runtime configuration interface
 - Model switching
 - Tool listing
@@ -342,6 +373,7 @@ def handle_command(line: str) -> bool:
 - Graceful exit command
 
 #### **6. Async Agent Loop**
+
 ```python
 async def run_agent(user_message: str) -> str:
     cfg = MODELS[model_name]
@@ -353,6 +385,7 @@ async def run_agent(user_message: str) -> str:
         )
         # Process tool calls, continue loop
 ```
+
 - Uses `AsyncOpenAI` for all model calls
 - Maintains global message history
 - Returns conversation with remembered context
@@ -363,12 +396,15 @@ async def run_agent(user_message: str) -> str:
 ## 🚀 Recommended Usage
 
 ### **Installation & Setup**
+
 1. Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
 2. Configure environment:
+
 ```bash
 # Copy .env.example to .env
 cp .env.example .env
@@ -376,23 +412,26 @@ cp .env.example .env
 ```
 
 3. Configure MCP servers:
+
 ```json
 // Edit mcp_servers.json
 {
   "mcpServers": {
-    "time": {"command": "uvx", "args": ["mcp-server-time"]},
-    "fetch": {"command": "uvx", "args": ["mcp-server-fetch"]}
+    "time": { "command": "uvx", "args": ["mcp-server-time"] },
+    "fetch": { "command": "uvx", "args": ["mcp-server-fetch"] }
   }
 }
 ```
 
 ### **Running the Harness**
+
 ```bash
 python harness.py
 # Start the interactive CLI
 ```
 
 ### **Interactive Commands**
+
 ```bash
 # List all available models
 /models
@@ -411,7 +450,9 @@ python harness.py
 ```
 
 ### **Normal Conversation**
+
 After typing `/quit`, the harness:
+
 1. Accepts normal conversation
 2. Maintains message history across all model switches
 3. Automatically remembers user facts
@@ -421,35 +462,36 @@ After typing `/quit`, the harness:
 
 ## 💡 Key Advantages of harness.py
 
-| Feature | Benefit |
-|---------|---------|
-| **Model Registry** | Switch between models at runtime without restarting |
-| **Config-Driven** | All MCP servers defined in `mcp_servers.json` |
-| **Persistent Memory** | User facts saved to `memory.md` across sessions |
-| **Async Design** | Faster startup, efficient resource management |
-| **Type-Safe** | Pydantic validation for model configurations |
-| **Error Recovery** | Graceful handling of failed MCP connections |
-| **Slash Commands** | Runtime configuration without code changes |
-| **Unified Tool Dispatch** | Single entry point for all tools (local or MCP) |
+| Feature                   | Benefit                                             |
+| ------------------------- | --------------------------------------------------- |
+| **Model Registry**        | Switch between models at runtime without restarting |
+| **Config-Driven**         | All MCP servers defined in `mcp_servers.json`       |
+| **Persistent Memory**     | User facts saved to `memory.md` across sessions     |
+| **Async Design**          | Faster startup, efficient resource management       |
+| **Type-Safe**             | Pydantic validation for model configurations        |
+| **Error Recovery**        | Graceful handling of failed MCP connections         |
+| **Slash Commands**        | Runtime configuration without code changes          |
+| **Unified Tool Dispatch** | Single entry point for all tools (local or MCP)     |
 
 ---
 
 ## 📊 Version Comparison Summary
 
-| Version | Async | Tools | Memory | MCP | Models | Slash Commands | Status |
-|---------|-------|-------|--------|-----|--------|---------------|--------|
-| **v0** | ❌ | None | ❌ | ❌ | ❌ | ❌ | Basic |
-| **v1** | ❌ | 2 | ❌ | ❌ | ❌ | ❌ | Simple |
-| **v2** | ❌ | 3 | ❌ | ❌ | ❌ | ❌ | Multi-shot |
-| **v3** | ✅ | 3 + MCP | ❌ | ✅ | ❌ | ❌ | Async |
-| **v4** | ✅ | 3 + MCP | ✅ | ✅ | ❌ | ✅ | Full |
-| **harness.py** | ✅ | 4 + MCP | ✅ | ✅ | ✅ | ✅ | **Production** |
+| Version        | Async | Tools   | Memory | MCP | Models | Slash Commands | Status         |
+| -------------- | ----- | ------- | ------ | --- | ------ | -------------- | -------------- |
+| **v0**         | ❌    | None    | ❌     | ❌  | ❌     | ❌             | Basic          |
+| **v1**         | ❌    | 2       | ❌     | ❌  | ❌     | ❌             | Simple         |
+| **v2**         | ❌    | 3       | ❌     | ❌  | ❌     | ❌             | Multi-shot     |
+| **v3**         | ✅    | 3 + MCP | ❌     | ✅  | ❌     | ❌             | Async          |
+| **v4**         | ✅    | 3 + MCP | ✅     | ✅  | ❌     | ✅             | Full           |
+| **harness.py** | ✅    | 4 + MCP | ✅     | ✅  | ✅     | ✅             | **Production** |
 
 ---
 
 ## 🌟 Project Summary
 
 This workspace contains:
+
 - **Complete Python language documentation** (`python_doc.md`, `python.md`)
 - **5 companion agent versions** (`v0.py` through `v4.py`, `harness.py`) demonstrating progressive evolution:
   - v0: Basic chat
@@ -465,4 +507,4 @@ The progression demonstrates a clear evolution from simple chatbot to full-featu
 
 ---
 
-*Last updated: 2025*
+_Last updated: 2025_
