@@ -1,5 +1,6 @@
 import sys
 import io
+import os
 
 if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
@@ -15,6 +16,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.types import TextContent
 from mcp.client.stdio import stdio_client
 
+from dotenv import load_dotenv
 from openai import AsyncOpenAI
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam,
@@ -22,7 +24,9 @@ from openai.types.chat import (
     ChatCompletionToolUnionParam,
 )
 
-client = AsyncOpenAI(base_url="http://127.0.0.1:8000/v1", api_key="0ldManforgot")
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
+client = AsyncOpenAI(base_url="http://127.0.0.1:8000/v1", api_key=os.environ["LOCAL_API_KEY"])
 MODEL = "Qwen3.5-4B-4bit"
 
 WORKSPACE = Path(__file__).parent / "workspace"

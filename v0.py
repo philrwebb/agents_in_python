@@ -1,13 +1,18 @@
 import io
+import os
+from pathlib import Path
 import sys
 
 
 if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
 
+from dotenv import load_dotenv
 from openai import OpenAI
 
-client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="0ldManforgot")
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
+client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key=os.environ["LOCAL_API_KEY"])
 MODEL = "Qwen3.5-4B-4bit"
 
 def chat(user_message: str) -> str:
