@@ -11,7 +11,7 @@ from typing import cast
 import json
 from contextlib import AsyncExitStack
 from pathlib import Path
-from feedparserrunner import fetch_article_text, fetch_abc_news
+from tools import fetch_article_text, fetch_abc_news, list_files, read_file, write_file, load_memory, save_memory
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.types import TextContent
@@ -59,34 +59,14 @@ model_name = "local"  # switch at runtime with /model
 # Pillar 2: memory. A markdown file in the prompt + a tool to append to it.
 # ---------------------------------------------------------------------------
 
-def load_memory() -> str:
-    if MEMORY_FILE.is_file():
-        return MEMORY_FILE.read_text(encoding="utf-8")
-    return "(nothing saved yet)"
-
-
-def save_memory(fact: str) -> str:
-    with MEMORY_FILE.open("a", encoding="utf-8") as f:
-        f.write(f"- {fact}\n")
-    return f"saved: {fact}"
+# see tools.py
 
 
 # ---------------------------------------------------------------------------
 # Local tools (the ones we wrote by hand back in v1)
 # ---------------------------------------------------------------------------
 
-def list_files() -> str:
-    return "\n".join(p.name for p in WORKSPACE.iterdir()) or "(empty)"
-
-
-def read_file(filename: str) -> str:
-    path = WORKSPACE / filename
-    return path.read_text(encoding="utf-8") if path.is_file() else f"error: no {filename}"
-
-
-def write_file(filename: str, content: str) -> str:
-    (WORKSPACE / filename).write_text(content, encoding="utf-8")
-    return f"wrote {filename}"
+# see tools.py
 
 
 LOCAL_TOOLS: dict[str, Callable[..., str]] = {
