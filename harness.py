@@ -11,6 +11,7 @@ from typing import cast
 import json
 from contextlib import AsyncExitStack
 from pathlib import Path
+from feedparserrunner import fetch_article_text, fetch_abc_news
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.types import TextContent
@@ -93,6 +94,8 @@ LOCAL_TOOLS: dict[str, Callable[..., str]] = {
     "read_file": read_file,
     "write_file": write_file,
     "save_memory": save_memory,
+    "fetch_abc_news": fetch_abc_news,
+    "fetch_article_text": fetch_article_text,
 }
 
 TOOL_SCHEMAS: list[ChatCompletionToolUnionParam] = [
@@ -144,6 +147,47 @@ TOOL_SCHEMAS: list[ChatCompletionToolUnionParam] = [
                 "type": "object",
                 "properties": {"fact": {"type": "string"}},
                 "required": ["fact"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "fetch_abc_news",
+            "description": (
+                "Get the latest ABC News headlines, summaries, and article links."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of news entries to retrieve.",
+                        "minimum": 1,
+                        "default": 5,
+                    },
+                },
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "fetch_article_text",
+            "description": (
+                "Download an article from its URL and return its main text. "
+                "Use to read a story found by fetch_abc_news."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The full URL of the article to read.",
+                    },
+                },
+                "required": ["url"],
             },
         },
     },
