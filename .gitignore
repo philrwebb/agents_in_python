@@ -17,3 +17,4 @@ wheels/
 workspace/
 .vscode/
 .mypy_cache
+memory.md

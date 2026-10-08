@@ -1,4 +1,5 @@
 import json
+import subprocess
 from urllib.request import Request, urlopen
 
 import feedparser  # type: ignore[import-untyped]
@@ -59,6 +60,45 @@ def read_file(filename: str) -> str:
 def write_file(filename: str, content: str) -> str:
     (WORKSPACE / filename).write_text(content, encoding="utf-8")
     return f"wrote {filename}"
+
+
+def run_shell_script(
+    filename: str, args: list[str] | None = None, timeout: int = 60
+) -> str:
+    """Run a trusted Bash script; relative paths are based on WORKSPACE."""
+    if not isinstance(filename, str) or not filename:
+        return "error: filename must be a non-empty string"
+    if args is not None and (
+        not isinstance(args, list) or not all(isinstance(arg, str) for arg in args)
+    ):
+        return "error: args must be a list of strings"
+    if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout < 1:
+        return "error: timeout must be a positive integer"
+
+    try:
+        path = (WORKSPACE / filename).resolve()
+        if not path.is_file():
+            return f"error: no script {filename}"
+        result = subprocess.run(
+            ["bash", "--", str(path), *(args or [])],
+            cwd=WORKSPACE,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return f"error: script exceeded the {timeout}-second timeout"
+    except (OSError, ValueError) as exc:
+        return f"error: could not run script: {exc}"
+
+    return json.dumps(
+        {"exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr},
+        ensure_ascii=False,
+    )
 
 
 if __name__ == "__main__":

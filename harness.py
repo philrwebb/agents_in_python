@@ -11,7 +11,7 @@ from typing import cast
 import json
 from contextlib import AsyncExitStack
 from pathlib import Path
-from tools import fetch_article_text, fetch_abc_news, list_files, read_file, write_file, load_memory, save_memory
+from tools import fetch_article_text, fetch_abc_news, list_files, read_file, write_file, load_memory, save_memory, run_shell_script
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.types import TextContent
@@ -70,6 +70,7 @@ model_name = "local"  # switch at runtime with /model
 
 
 LOCAL_TOOLS: dict[str, Callable[..., str]] = {
+    "run_shell_script": run_shell_script,
     "list_files": list_files,
     "read_file": read_file,
     "write_file": write_file,
@@ -79,6 +80,34 @@ LOCAL_TOOLS: dict[str, Callable[..., str]] = {
 }
 
 TOOL_SCHEMAS: list[ChatCompletionToolUnionParam] = [
+    {
+        "type": "function",
+        "function": {
+            "name": "run_shell_script",
+            "description": (
+                "Run a trusted Bash script requested by the user. Relative script paths "
+                "and the working directory use the workspace folder; absolute paths "
+                "are also accepted. Scripts run with the harness user's permissions. "
+                "Returns stdout, stderr, and exit_code."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "filename": {"type": "string", "description": "Path to the script."},
+                    "args": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Arguments passed literally to the script.",
+                    },
+                    "timeout": {
+                        "type": "integer", "minimum": 1, "default": 60,
+                        "description": "Maximum execution time in seconds.",
+                    },
+                },
+                "required": ["filename"],
+            },
+        },
+    },
     {
         "type": "function",
         "function": {
@@ -229,6 +258,8 @@ async def connect_mcp(stack: AsyncExitStack):
 
 
 async def call_tool(name: str, args: dict) -> str:
+    if name == "run_shell_script":
+        return await asyncio.to_thread(run_shell_script, **args)
     if name in LOCAL_TOOLS:
         return LOCAL_TOOLS[name](**args)
     if name in mcp_sessions:

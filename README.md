@@ -212,6 +212,23 @@ LOCAL_API_KEY=your_key
 
 ## 📝 Usage Examples
 
+### Bash scripts (harness.py)
+
+Place a trusted script such as `hello.sh` in `workspace/`:
+
+```bash
+#!/usr/bin/env bash
+printf 'Hello, %s!\n' "$1"
+```
+
+Ask the assistant: `Run hello.sh with the argument Philip`.
+The `run_shell_script` tool accepts `filename`, optional `args` (a list of
+strings), and `timeout` (seconds, default 60). It uses Bash, so scripts do not
+need executable permissions. Relative paths and the working directory use
+`workspace/`; absolute script paths are also accepted. Results contain
+`exit_code`, `stdout`, and `stderr`. Scripts run with the harness user's
+permissions and are not sandboxed. Interactive input is disabled.
+
 ### Basic Chat (v0)
 
 ```python
