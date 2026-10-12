@@ -1,2 +1,5 @@
 # Copy this file to .env and replace the dummy value with your local server API key.
+
 LOCAL_API_KEY=replace-with-your-local-api-key
+GEMINI_API_KEY=replace-with-your-gemini-or-antigravity-api-key
+DEEPSEEK_API_KEY=replace-with-your-deepseek-key

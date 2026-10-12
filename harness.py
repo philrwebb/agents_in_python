@@ -40,19 +40,35 @@ MCP_CONFIG = ROOT / "mcp_servers.json"
 
 class ModelConfig(BaseModel):
     base_url: str
-    api_key: str
+    api_key_env: str
     model: str
 
+    @property
+    def api_key(self) -> str:
+        key = os.environ.get(self.api_key_env, "")
+        if not key and self.api_key_env == "GEMINI_API_KEY":
+            key = os.environ.get("ANTIGRAVITY_API_KEY", "")
+        return key
 
-MODELS: dict[str, ModelConfig] = {
-    "local": ModelConfig(
-        base_url="http://127.0.0.1:8000/v1",
-        api_key=os.environ["LOCAL_API_KEY"],
-        model="Qwen3.5-4B-4bit",
-    ),
-}
 
-model_name = "local"  # switch at runtime with /model
+class ModelRegistry(BaseModel):
+    default_model: str
+    models: dict[str, ModelConfig]
+
+
+def load_models(path: Path) -> ModelRegistry:
+    """Load the model registry and validate the startup model."""
+    registry = ModelRegistry.model_validate_json(path.read_text(encoding="utf-8"))
+    if registry.default_model not in registry.models:
+        raise ValueError(
+            f"{path.name}: default_model '{registry.default_model}' is not in models"
+        )
+    return registry
+
+
+model_registry = load_models(ROOT / "models.config")
+MODELS: dict[str, ModelConfig] = model_registry.models
+model_name = model_registry.default_model  # switch at runtime with /model
 
 
 # ---------------------------------------------------------------------------
@@ -274,6 +290,11 @@ async def call_tool(name: str, args: dict) -> str:
 
 async def run_agent(user_message: str) -> str:
     cfg = MODELS[model_name]
+    if not cfg.api_key:
+        return (
+            f"error: API key for '{model_name}' ({cfg.api_key_env}) is not configured. "
+            f"Please set {cfg.api_key_env} in your .env file."
+        )
     client = AsyncOpenAI(base_url=cfg.base_url, api_key=cfg.api_key)
     # print(cfg)
 
@@ -312,7 +333,7 @@ def handle_command(line: str) -> bool:
     if cmd == "/models":
         for name, cfg in MODELS.items():
             marker = "*" if name == model_name else " "
-            print(f" {marker} {name:<12} {cfg.model}  ({cfg.base_url})")
+            print(f" {marker} {name:<16} {cfg.model:<18} ({cfg.base_url})")
     elif cmd == "/model":
         if arg in MODELS:
             model_name = arg
