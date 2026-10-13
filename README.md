@@ -1,5 +1,18 @@
 # Python Development Project
 
+## Internet research in the harness
+
+Run `uv sync`, then `uv run harness.py`. The `/tools` command lists:
+
+- `search_web(query, max_results=5)`: searches for source titles, URLs, and snippets using DDGS; no additional API key is required.
+- `browse_web(url, max_chars=12000)`: downloads HTML or plain text and returns readable text, the final source URL, and a truncation flag.
+
+Ask a question such as "Search the web for recent Python news, read the relevant pages, and answer with source links", or provide a URL to read directly. The model chooses when to call these tools.
+
+Page downloads have a five-second network timeout and a 2 MB size limit; text output is capped at 50,000 characters. Search engines may rate-limit requests. JavaScript-only pages, authenticated content, and PDFs are not supported. Retrieved content is treated as untrusted reference material in the system prompt.
+
+Run the tool tests with `uv run pytest -q`.
+
 ---
 
 ## 🔄 Assistant Agent Evolution (v0-v4)

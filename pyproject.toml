@@ -5,10 +5,19 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14.5"
 dependencies = [
+    "ddgs==9.16.0",
     "feedparser>=6.0.14",
     "mcp>=2.3.0",
     "openai>=3.24.0",
     "pydantic>=2.13.5",
     "python-dotenv>=1.2.4",
     "trafilatura>=2.3.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
 ]

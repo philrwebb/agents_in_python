@@ -1,9 +1,71 @@
 import json
+import logging
 import subprocess
+from pathlib import Path
+from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+from ddgs import DDGS
 import feedparser  # type: ignore[import-untyped]
 import trafilatura
+
+logger = logging.getLogger(__name__)
+MAX_PAGE_BYTES = 2_000_000
+
+
+def search_web(query: str, max_results: int = 5) -> str:
+    """Find web sources, returning titles, URLs and snippets as JSON."""
+    if not isinstance(query, str) or not query.strip() or len(query) > 1000:
+        return json.dumps({"error": "query must contain 1 to 1000 characters"})
+    if type(max_results) is not int or not 1 <= max_results <= 10:
+        return json.dumps({"error": "max_results must be an integer from 1 to 10"})
+    try:
+        results = DDGS(timeout=5).text(query.strip(), max_results=max_results)
+        return json.dumps({"results": [
+            {"title": item.get("title", ""), "url": item.get("href", ""),
+             "snippet": item.get("body", "")}
+            for item in results[:max_results]
+        ]}, ensure_ascii=False)
+    except Exception:
+        logger.exception("Web search failed")
+        return json.dumps({"error": "Web search failed; try again or provide a URL"})
+
+
+def browse_web(url: str, max_chars: int = 12000) -> str:
+    """Read text from a public HTML or plain-text web page."""
+    if type(max_chars) is not int or not 1 <= max_chars <= 50000:
+        return json.dumps({"error": "max_chars must be an integer from 1 to 50000"})
+    try:
+        if not isinstance(url, str):
+            raise ValueError("url must be an HTTP or HTTPS URL")
+        parsed = urlsplit(url)
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise ValueError("url must be an HTTP or HTTPS URL")
+        if parsed.username is not None or parsed.password is not None:
+            raise ValueError("URL credentials are not supported")
+        request = Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "text/html,text/plain"})
+        with urlopen(request, timeout=5) as response:
+            content_type = response.headers.get_content_type()
+            if content_type not in {"text/html", "application/xhtml+xml", "text/plain"}:
+                raise ValueError("Only HTML and plain-text pages are supported")
+            data = response.read(MAX_PAGE_BYTES + 1)
+            if len(data) > MAX_PAGE_BYTES:
+                raise ValueError("Page exceeds the 2 MB download limit")
+            source_url = response.geturl()
+            charset = response.headers.get_content_charset() or "utf-8"
+        if content_type == "text/plain":
+            page_text = data.decode(charset, errors="replace")
+        else:
+            page_text = trafilatura.extract(data, include_comments=False) or ""
+        if not page_text.strip():
+            raise ValueError("No readable text found; the page may require JavaScript or a login")
+        return json.dumps({"url": source_url, "text": page_text[:max_chars],
+                           "truncated": len(page_text) > max_chars}, ensure_ascii=False)
+    except ValueError as exc:
+        return json.dumps({"error": str(exc)})
+    except Exception:
+        logger.exception("Web page retrieval failed")
+        return json.dumps({"error": "Could not retrieve the page; it may be unavailable or block automated access"})
 
 # Target ABC RSS URL (e.g., Just In / Top News)
 RSS_URL = "https://www.abc.net.au/news/feed/51120/rss.xml"
@@ -41,7 +103,6 @@ def fetch_abc_news(limit=5):
     ]
     return json.dumps(entries, indent=2, ensure_ascii=False)
 
-from pathlib import Path
 ROOT = Path(__file__).parent
 WORKSPACE = ROOT / "workspace"
 MEMORY_FILE = ROOT / "memory.md"
