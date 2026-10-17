@@ -68,7 +68,7 @@ def test_schemas_and_dispatch(monkeypatch: pytest.MonkeyPatch) -> None:
     schemas = {schema['function']['name']: schema['function'] for schema in harness.TOOL_SCHEMAS if schema['type'] == 'function'}
     for name, required in [('search_web', 'query'), ('browse_web', 'url')]:
         assert name in harness.LOCAL_TOOLS
-        assert schemas[name]['parameters']['required'] == [required]
+        assert schemas[name]['parameters']['required'] == [required] # type: ignore
     monkeypatch.setitem(harness.LOCAL_TOOLS, 'search_web', lambda query: query)
     assert asyncio.run(harness.call_tool('search_web', {'query': 'question'})) == 'question'
     assert 'error' in json.loads(asyncio.run(harness.call_tool('browse_web', {})))
