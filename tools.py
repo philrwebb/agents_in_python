@@ -12,7 +12,7 @@ import trafilatura
 logger = logging.getLogger(__name__)
 MAX_PAGE_BYTES = 2_000_000
 
-
+#search web tool
 def search_web(query: str, max_results: int = 5) -> str:
     """Find web sources, returning titles, URLs and snippets as JSON."""
     if not isinstance(query, str) or not query.strip() or len(query) > 1000:
