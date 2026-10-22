@@ -72,3 +72,14 @@ def test_schemas_and_dispatch(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setitem(harness.LOCAL_TOOLS, 'search_web', lambda query: query)
     assert asyncio.run(harness.call_tool('search_web', {'query': 'question'})) == 'question'
     assert 'error' in json.loads(asyncio.run(harness.call_tool('browse_web', {})))
+
+
+def test_abc_news_schema_and_dispatch(monkeypatch: pytest.MonkeyPatch) -> None:
+    schema = next(schema['function'] for schema in harness.TOOL_SCHEMAS
+                  if schema['type'] == 'function' and schema['function']['name'] == 'fetch_abc_news')
+    assert 'abc.net.au' in schema['description']
+    assert schema['parameters']['properties']['limit']['type'] == 'integer'
+    fetch = MagicMock(return_value='[{"title": "Latest headline"}]')
+    monkeypatch.setitem(harness.LOCAL_TOOLS, 'fetch_abc_news', fetch)
+    assert json.loads(asyncio.run(harness.call_tool('fetch_abc_news', {'limit': 10})))[0]['title'] == 'Latest headline'
+    fetch.assert_called_once_with(limit=10)
